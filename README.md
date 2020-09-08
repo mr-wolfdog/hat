@@ -20,11 +20,11 @@ Alternatively, you can make use of the installer (installer.sh) that has been in
 # RUNNING THE SCRIPT
 To run the HAT, simply execute the tool by executing ($ just means execute in the terminal):
 $ hat
-## NOTE: Not all capabilities of the HAT will be available without running the tool as root
+### NOTE: Not all capabilities of the HAT will be available without running the tool as root
 
 To run the tool as root (to access more capabilities), execute the following:
 $ sudo hat
-## NOTE: Always be careful with any file manipulations when using sudo
+### NOTE: Always be careful with any file manipulations when using sudo
 
 Once the tool has been executed, the tool will prompt you for any interaction that it needs.
 
