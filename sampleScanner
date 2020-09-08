@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+#This tool is intended to submit the malware samples collected by the honeypot to VirusTotal to decide if they are suitable
+
+
+#Determine if the current system can use the -n option to not print a newline
+if [ "'echo -n'" = "-n" ]
+then
+        n=''
+        c='\c'
+else
+        n='-n'
+        c=''
+fi
+
+#Ask the user for the path to their vt.py file to use for scanning
+echo "This is the Sample Scanner! I will scan your binaries using VirusTotal!
+"
+#Now, ask the user for the path to the directory with the binaries to scan
+echo $n "Please input the full path to the directory that contains the samples that you would like to scan:" "$c"
+read binaryPath
+#Show the user what they input, for clarity
+echo "You entered: ""$binaryPath" "
+
+"
+
+#Now, let's actually scan those samples in the provided directory
+path="$binaryPath"/*
+echo "Attempting to scan all files in ""$binaryPath"", as represented by the expression: ""$path"
+
+builtin type -P vt.py &> /dev/null && exister="1" || exister="0"
+if [ exister="1" ]
+then
+	if [ -d "$binaryPath" ]
+	then
+		vt.py -s $path | tee virusTotalReport
+	else
+		echo "The path that you input does not exist. Exiting..."
+	fi
+else
+	echo "The file vt.py does not exist. Exiting..."
+fi

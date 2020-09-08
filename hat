@@ -1,0 +1,169 @@
+#!/usr/bin/env bash
+
+#Determine if the current system can use the -n option to not print a newline
+if [ "'echo -n'" = "-n" ]
+then
+	n=''
+	c='\c'
+else
+	n='-n'
+	c=''
+fi
+
+#Print a message using the variables that were set above (with no newline at the end)
+echo $n The current total number of samples captured by dionaea is: "$c"
+
+#Output the number of binary samples to the standard output
+find /opt/dionaea/var/lib/dionaea/binaries/ -type f -size +0 | uniq | wc -l
+
+#Print a newline
+echo
+echo $n The current size of the dionaea log file is: "$c"
+find /opt/dionaea/var/log/dionaea/dionaea.log -printf "%6k KiB\n"
+echo $n dionaea tends to stop collecting samples once the log file reaches 2.0 GBs. Would you like to empty the dionaea log file? "[Y/N]:" "$c"
+read answer
+
+#Now, compare the user's answer to determine the desired flow of execution
+if [ $answer = "Y" ] || [ $answer = "y" ]
+then
+
+	if [ "$EUID" -ne 0 ]
+	then
+		echo "Please run this script as root. I cannot access the dionaea logs otherwise"
+		exit
+	else
+		#The user desires to empty the dionaea log file
+		echo "The log will now be emptied..."
+
+		#Now, perform the actual removal of the full log file and creation of the empty log file
+		rm /opt/dionaea/var/log/dionaea/dionaea.log; wait
+		touch /opt/dionaea/var/log/dionaea/dionaea.log
+
+		#The log clearing is finished
+		echo "The log has been emptied..."
+		echo "Now, let's restart dionaea to make sure that the change takes effect..."
+
+		#Restart the dionaea service to make sure that the log manipulation is recognized
+		supervisorctl restart dionaea
+
+		#Now, let the user know that it is all done
+		echo "This portion of the script is finished! Remember to check back in to see what samples you caught!"
+	fi
+elif [ $answer = "N" ] || [ $answer = "n" ]
+then
+	echo "The log has been left as-is"
+else
+	echo "Invalid input!"
+fi
+
+echo
+
+#Now, let's ask the user if they want to see a list of the current binaries caught, as a full list, or as a filtered list (no http* files)
+echo $n "Would you like to see a list of the current caught binaries?
+Options:
+	[U]nfiltered list
+	[F]iltered list
+	[N]o list
+
+Which list would you like to see? Enter your choice: ""$c"
+read listAnswer
+
+#Now, compare the user's answer to determine the desired flow of execution
+if [ $listAnswer = "U" ] || [ $listAnswer = "u" ]
+then
+	#User wants an Unfiltered list
+	echo "Chosen list: [U]nfiltered
+
+The following is your unfiltered list of binaries:"
+	ls -lh1rt /opt/dionaea/var/lib/dionaea/binaries/
+
+	#For user-friendliness, also output the length of the unfiltered list
+	echo $n "The length of the unfiltered list is: ""$c"
+	ls -lh1rt /opt/dionaea/var/lib/dionaea/binaries/ | wc -l
+
+elif [ $listAnswer = "F" ] || [ $listAnswer = "f" ]
+then
+	#User wants a filtered list, so let's print the list, but without the 0-sized http* files
+	echo "Chosen list: [F]iltered
+
+The following is your filtered list of binaries:"
+	find /opt/dionaea/var/lib/dionaea/binaries/ -type f -size +0
+
+	#For user-friendliness, also output the length of the filtered list
+	echo $n "The length of the filtered list is: ""$c"
+	find /opt/dionaea/var/lib/dionaea/binaries/ -type f -size +0 | wc -l
+
+elif [ $listAnswer = "N" ] || [ $listAnswer = "n" ]
+then
+	#User does not want a list, so simply print an exit message, then exit
+	echo "Chosen list: [N]o list
+
+" 
+else
+	#The input was invalid
+	echo "The input was invalid! Moving on..."
+fi
+
+#Ask the user if they want to copy the binary list into a new directory
+echo $n "Would you like to copy the binaries into a new directory? Enter [Y/y]es or [N/n]o: ""$c"
+read copyAnswer
+
+if [ $copyAnswer = "Y" ] || [ $copyAnswer = "y" ]
+then
+	#Ask the user for the source directory
+	echo $n "Please input the source directory for the binaries (include trailing /): $c"
+	read sourceDirectory
+	
+	#Ask the user for the destination directory
+	echo $n "Please input the destination directory for the binaries (include trailing /): $c"
+	read destDirectory
+	
+	if [ -d $sourceDirectory ] && [ -d $destDirectory ]
+	then
+
+		#Use find to select the binary files that are not empty
+		echo "Copying the binaries from $sourceDirectory to $destDirectory now..."
+		rsync -avp --chmod=755 \
+			"$sourceDirectory" \
+			"$destDirectory"
+#		sourceFiles="$(find $sourceDirectory -type f -size +0)"  
+
+		#Perform the copy using the -n option for no clobbering of files (don't overwrite existing files in destination)
+#		echo "Copying the files from $sourceDirectory to $destDirectory now..."
+#		cp -n "$sourceFiles" "$destDirectory"
+	else
+		echo "One of the directories was invalid! Skipping..."
+	fi
+elif [ $copyAnswer = "N" ] || [ $copyAnswer = "n" ]
+then
+	echo "Chose to not copy binaries. Skipping..."
+else
+	echo "Invalid input! Skipping..."
+fi
+
+#Begin the VirusTotal scan of the binaries
+echo $n "Would you like to run VirusTotal scans on some samples binaries? Enter [Y/y]es or [N/n]o: ""$c"
+read scanAnswer
+
+if [ $scanAnswer = "Y" ] || [ $scanAnswer = "y" ]
+then
+	#Check to see if sampleScanner is a command that can be run (it must be located in bin)
+	builtin type -P sampleScanner &> /dev/null && existCheck="1" || existCheck="0"
+	if [ existCheck="1" ]
+	then
+		sampleScanner
+	else
+		echo "The sampleScanner tool is not detected. Make sure that sampleScanner is also in bin (either your ~/bin or /bin)."
+	fi
+elif [ $scanAnswer = "N" ] || [ $scanAnswer = "n" ]
+then
+	echo "You have chosen to perform no VirusTotal scan. Skipping ahead...
+"
+else
+	echo "Invalid input! Skipping to next section...
+"
+fi
+
+
+#The end of the script has been reached
+echo "Thank you for using the Honeypot Administration Tool (HAT)! See you next time, ""$USER""!"
