@@ -18,10 +18,9 @@ echo "This is the Sample Scanner! I will scan your binaries using VirusTotal!
 "
 #Now, ask the user for the path to the directory with the binaries to scan
 echo $n "Please input the full path to the directory that contains the samples that you would like to scan:" "$c"
-read binaryPath
+read -r binaryPath
 #Show the user what they input, for clarity
 echo "You entered: ""$binaryPath" "
-
 "
 
 #Now, let's actually scan those samples in the provided directory
@@ -29,11 +28,11 @@ path="$binaryPath"/*
 echo "Attempting to scan all files in ""$binaryPath"", as represented by the expression: ""$path"
 
 builtin type -P vt.py &> /dev/null && exister="1" || exister="0"
-if [ exister="1" ]
+if [ $exister = "1" ]
 then
 	if [ -d "$binaryPath" ]
 	then
-		vt.py -s $path | tee virusTotalReport
+		vt.py -s "$path" | tee virusTotalReport
 	else
 		echo "The path that you input does not exist. Exiting..."
 	fi
