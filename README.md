@@ -18,36 +18,36 @@ Run the HAT to ensure that the tool executes correctly.
 Alternatively, you can make use of the installer (installer.sh) that has been included since HAT version 0.4. If, after using the installer, the tool is not working properly, check for fulfillment of the points above from the manual installation instructions.
 
 # RUNNING THE SCRIPT
-To run the HAT, simply execute the tool by executing ($ just means execute in the terminal):
-$ hat
+To run the HAT, simply execute the tool by executing ($ just means execute in the terminal):  
+> `$ hat`
 ### NOTE: Not all capabilities of the HAT will be available without running the tool as root
 
-To run the tool as root (to access more capabilities), execute the following:
-$ sudo hat
+To run the tool as root (to access more capabilities), execute the following:  
+> `$ sudo hat`  
 ### NOTE: Always be careful with any file manipulations when using sudo
 
 Once the tool has been executed, the tool will prompt you for any interaction that it needs.
 
 # CURRENT CAPABILITIES
-Capabilities that begin with ROOT can only be used when running HAT as root.
-Output the current number of caught binaries
-Output the current size of the dionaea log file
-ROOT: Reset the dionaea log file by deleting the current file and creating a new, empty log file and restarting the dionaea service
-Output the current list of binaries (as a Filtered or Unfiltered list, or No list to skip this capability)
-The Filtered list does not contain any of the zero-sized “http*” files that dionaea includes in its */binaries/ directory.
-The Unfiltered list contains all files in the */binaries/ directory.
-The No list option skips the printing of a list of binaries.
-ROOT: Copy the binaries from the directory where they are stored by dionaea into a user-specified directory.
-Run VirusTotal scans on all of the binaries in the specified directory. (The user must have access privileges to the specified directory) using the Sample Scanner tool (provided alongside HAT). This capability currently runs into an error when running as root.
+Capabilities that begin with **ROOT** can only be used when running HAT as root.
+- Output the current number of caught binaries
+- Output the current size of the dionaea log file
+- **ROOT**: Reset the dionaea log file by deleting the current file and creating a new, empty log file and restarting the dionaea service
+- Output the current list of binaries (as a Filtered or Unfiltered list, or No list to skip this capability)
+    - The Filtered list does not contain any of the zero-sized “http*” files that dionaea includes in its */binaries/ directory.
+    - The Unfiltered list contains all files in the */binaries/ directory.
+    - The No list option skips the printing of a list of binaries.
+- **ROOT**: Copy the binaries from the directory where they are stored by dionaea into a user-specified directory.
+- Runs VirusTotal scans on all of the binaries in the specified directory (The user must have access privileges to the specified directory) using the Sample Scanner tool (provided alongside HAT).
 The following VirusTotalApi tool is required for this capability: https://github.com/doomedraven/VirusTotalApi
 
 # KNOWN ISSUES
 Currently, once the tool is correctly installed to the /bin directory, the Sample Scanner tool may produce some issues regarding some Python libraries not being accessible (among ones that have had these issues are python.dateutil and texttable).
 
-To fix the issues with python.dateutil and texttable, run the following two commands:
+To fix the issues with python.dateutil and texttable, run the following two commands:  
 
-$ sudo pip install python-dateutil --upgrade
-$ sudo pip install texttable --upgrade
+> `$ sudo pip install python-dateutil --upgrade`  
+> `$ sudo pip install texttable --upgrade`
 
 You should now be able to run HAT as root and use the VirusTotal scanning capability run by Sample Scanner and vt.py.
 
