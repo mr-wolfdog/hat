@@ -50,3 +50,6 @@ $ sudo pip install python-dateutil --upgrade
 $ sudo pip install texttable --upgrade
 
 You should now be able to run HAT as root and use the VirusTotal scanning capability run by Sample Scanner and vt.py.
+
+# Script Security Checks
+Currently, the scripts are being run through the Shell Check tool located at https://www.shellcheck.net/ to find possible flaws. As more tools are found or suggested, the scripts can be further checked.
