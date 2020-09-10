@@ -11,12 +11,12 @@ while getopts "hs:d:" arg; do
 		   ;;
 
 		h) 
-		   echo -e "This is the Honeypot Administration Tool (HAT)! This tool is intended to streamline some of the common dionaea honeypot administrator tasks.\n\nscript usage: $(basename $0) [-s] [-d] [-h]\n\t\t-s: The source directory for the captured dionaea binary files.\n\t\t-d: The destination directory for the binary samples from dionaea." >&2
+		   echo -e "This is the Honeypot Administration Tool (HAT)! This tool is intended to streamline some of the common dionaea honeypot administrator tasks.\n\nscript usage: $(basename "$0") [-s] [-d] [-h]\n\t\t-s: The source directory for the captured dionaea binary files.\n\t\t-d: The destination directory for the binary samples from dionaea." >&2
 		   exit 0
 		   ;;
 
 		?)
-		   echo "script usage: $(basename $0) [-s] [-d] [-h]" >&2
+		   echo "script usage: $(basename "$0") [-s] [-d] [-h]" >&2
                    exit 1
                    ;;
 
@@ -181,7 +181,7 @@ then
 		then
 			echo $n "Scan all files in $sourceDirectory? [Y/N] (No will allow you to input another directory): $c"
 			read -r directoryAnswer
-			if [ "$scanAnswer" = "Y" ] || [ "$scanAnswer" = "y" ]
+			if [ "$directoryAnswer" = "Y" ] || [ "$directoryAnswer" = "y" ]
 			then
 				sampleScanner -s "$sourceDirectory"
 			else
