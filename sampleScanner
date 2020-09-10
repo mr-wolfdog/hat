@@ -8,6 +8,12 @@ while getopts 's:' OPTION; do
 	    sourceDirectory="$OPTARG"
 	    echo "Using the provided source directory: $sourceDirectory"
 	    ;;
+	  
+	  ?)
+	    echo "script usage: $(basename "$0") [-s]" >&2
+	    exit 1
+	    ;;
+	    
 	esac
 done
 
@@ -23,7 +29,6 @@ fi
 
 #Ask the user for the path to their vt.py file to use for scanning
 echo "This is the Sample Scanner! I will scan your binaries using VirusTotal!
-
 "
 
 
