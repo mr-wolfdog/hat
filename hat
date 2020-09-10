@@ -1,5 +1,28 @@
 #!/usr/bin/env bash
 
+while getopts "hs:d:" arg; do
+	case $arg in
+		s) 
+		   sourceDirectory=$OPTARG
+		   ;;
+		
+		d) 
+		   destDirectory=$OPTARG
+		   ;;
+
+		h) 
+		   echo -e "This is the Honeypot Administration Tool (HAT)! This tool is intended to streamline some of the common dionaea honeypot administrator tasks.\n\nscript usage: $(basename $0) [-s] [-d] [-h]\n\t\t-s: The source directory for the captured dionaea binary files.\n\t\t-d: The destination directory for the binary samples from dionaea." >&2
+		   exit 0
+		   ;;
+
+		?)
+		   echo "script usage: $(basename $0) [-s] [-d] [-h]" >&2
+                   exit 1
+                   ;;
+
+	esac
+done
+
 #Determine if the current system can use the -n option to not print a newline
 if [ "'echo -n'" = "-n" ]
 then
@@ -106,14 +129,20 @@ read -r copyAnswer
 
 if [ "$copyAnswer" = "Y" ] || [ "$copyAnswer" = "y" ]
 then
-	#Ask the user for the source directory
-	echo $n "Please input the source directory for the binaries (include trailing /): $c"
-	read -r sourceDirectory
-	
-	#Ask the user for the destination directory
-	echo $n "Please input the destination directory for the binaries (include trailing /): $c"
-	read -r destDirectory
-	
+	#Ask the user for the source directory if it was not set by the option
+	if ! [ -d "$sourceDirectory" ]
+	then
+		echo $n "Please input the source directory for the binaries (include trailing /): $c"
+		read -r sourceDirectory
+	fi
+
+	#Ask the user for the destination directory if it was not set by the option
+	if ! [ -d "$destDirectory" ]
+	then
+		echo $n "Please input the destination directory for the binaries (include trailing /): $c"
+		read -r destDirectory
+	fi
+
 	if [ -d "$sourceDirectory" ] && [ -d "$destDirectory" ]
 	then
 
@@ -147,7 +176,20 @@ then
 	builtin type -P sampleScanner &> /dev/null && existCheck="1" || existCheck="0"
 	if [ $existCheck = "1" ]
 	then
-		sampleScanner
+		#Ask the User if they want to use the previously-used destination directory
+		if [ -d "$sourceDirectory" ]
+		then
+			echo $n "Scan all files in $sourceDirectory? [Y/N] (No will allow you to input another directory): $c"
+			read -r directoryAnswer
+			if [ "$scanAnswer" = "Y" ] || [ "$scanAnswer" = "y" ]
+			then
+				sampleScanner -s "$sourceDirectory"
+			else
+				sampleScanner
+			fi
+		else
+			sampleScanner
+		fi
 	else
 		echo "The sampleScanner tool is not detected. Make sure that sampleScanner is also in bin (either your ~/bin or /bin)."
 	fi
