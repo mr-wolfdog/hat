@@ -2,6 +2,20 @@
 
 #This tool is intended to submit the malware samples collected by the honeypot to VirusTotal to decide if they are suitable
 
+while getopts 's:' OPTION; do
+	case "$OPTION" in
+	  s)
+	    sourceDirectory="$OPTARG"
+	    echo "Using the provided source directory: $sourceDirectory"
+	    ;;
+	  
+	  ?)
+	    echo "script usage: $(basename "$0") [-s]" >&2
+	    exit 1
+	    ;;
+	    
+	esac
+done
 
 #Determine if the current system can use the -n option to not print a newline
 if [ "'echo -n'" = "-n" ]
@@ -16,27 +30,49 @@ fi
 #Ask the user for the path to their vt.py file to use for scanning
 echo "This is the Sample Scanner! I will scan your binaries using VirusTotal!
 "
-#Now, ask the user for the path to the directory with the binaries to scan
-echo $n "Please input the full path to the directory that contains the samples that you would like to scan:" "$c"
-read binaryPath
-#Show the user what they input, for clarity
-echo "You entered: ""$binaryPath" "
 
-"
 
-#Now, let's actually scan those samples in the provided directory
-path="$binaryPath"/*
-echo "Attempting to scan all files in ""$binaryPath"", as represented by the expression: ""$path"
-
-builtin type -P vt.py &> /dev/null && exister="1" || exister="0"
-if [ exister="1" ]
+#Check if the source directory (the directory that has the samples to scan) exists
+#If the variable contains a real directory, it must have been passed in as an option, so use it as the target for the scan
+if [ -d "$sourceDirectory" ]
 then
-	if [ -d "$binaryPath" ]
-	then
-		vt.py -s $path | tee virusTotalReport
-	else
-		echo "The path that you input does not exist. Exiting..."
-	fi
+	echo "Using the following source directory to get binaries to scan: $sourceDirectory"
+	
+	#Add the "*" wildcard to the end of the provided directory. This will let us target all of the files in the provided directory
+	path="$sourceDirectory"*
+        echo "Attempting to scan all files in ""$sourceDirectory"", as represented by the expression: ""$path"
+
+	#Make sure that vt.py is usable! exister=1 => vt.py can be used; exister=0 => vt.py cannot be used
+        builtin type -P vt.py &> /dev/null && exister="1" || exister="0"
+        if [ $exister = "1" ]
+        then
+		#vt.py exists, so use it and send the result to the standard output and to a file in the current directory
+                vt.py -s "$path" | tee virusTotalReport
+        else
+                echo "The file vt.py does not exist. Exiting..."
+        fi
 else
-	echo "The file vt.py does not exist. Exiting..."
+	#Now, ask the user for the path to the directory with the binaries to scan
+	echo $n "Please input the full path to the directory that contains the samples that you would like to scan:" "$c"
+	read -r binaryPath
+	#Show the user what they input, for clarity
+	echo "You entered: ""$binaryPath" "
+	"
+
+	#Now, let's actually scan those samples in the provided directory
+	path="$binaryPath"/*
+	echo "Attempting to scan all files in ""$binaryPath"", as represented by the expression: ""$path"
+
+	builtin type -P vt.py &> /dev/null && exister="1" || exister="0"
+	if [ $exister = "1" ]
+	then
+		if [ -d "$binaryPath" ]
+		then
+			vt.py -s "$path" | tee virusTotalReport
+		else
+			echo "The path that you input does not exist. Exiting..."
+		fi
+	else
+		echo "The file vt.py does not exist. Exiting..."
+	fi
 fi
