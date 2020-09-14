@@ -21,7 +21,7 @@ cd VirusTotalApi/ || exit
 pip3 install -r requirements.txt
 
 #Copy vt.py, the necessary script, into the user's bin
-cp vt/vt.py ~/bin/vt
+cp vt/vt.py ~/bin/vt.py
 
 #Move back to the installer's directory
 cd ..
