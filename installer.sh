@@ -7,7 +7,7 @@ echo "Welcome to the Honeypot Administration Tool (HAT) installer!"
 #Make sure that the user has their own bin directory
 if ! [ -d "$HOME/bin/" ]
 then
-	mkdir ~/bin/
+	mkdir "$HOME"/bin/
 fi
 
 #If this installer script was run as root, copy the scripts into /usr/local/bin/ for use by sudo; if not, let the user know.
@@ -33,7 +33,8 @@ cd VirusTotalApi/ || exit
 pip3 install -r requirements.txt
 
 #Copy vt.py, the necessary script, into the user's bin
-cp vt/vt.py ~/bin/vt.py
+cp vt/vt.py "$HOME"/bin/vt.py
+cp vt/vt.py /usr/local/bin/vt.py
 
 #Move back to the installer's directory
 cd ..
