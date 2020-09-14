@@ -10,6 +10,18 @@ then
 	mkdir ~/bin/
 fi
 
+#If this installer script was run as root, copy the scripts into /usr/local/bin/ for use by sudo; if not, let the user know.
+if [ "$EUID" -ne 0 ]
+then
+	echo "To make this script easily-accessible to root, please run this script as root."
+else
+	#Ensure that /usr/local/bin/ exists (you never know if it is a weird distro)
+	if [ -d "/usr/local/bin/" ]
+	then
+		find . -type f -not -name "installer.sh" -exec cp {} /usr/local/bin/ +
+	fi
+fi
+
 #Move the script files into the user's bin directory
 find . -type f -not -name "installer.sh" -exec cp {} ~/bin/ +
 
